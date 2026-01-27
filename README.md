@@ -122,71 +122,49 @@ Diagrama en texto (visión rápida):
     - Worker Celery/RQ (ejecución asíncrona)
     - LLM (LangChain + GPT)
 
-Diagrama equivalente en PlantUML:
+Diagrama equivalente en Mermaid (renderizable en muchos editores/visores Markdown):
 
-```plantuml
-@startuml AAQ_Architecture
-skinparam componentStyle rectangle
+```mermaid
+flowchart LR
+  User[Usuario] --> UI[UI Web]
+  UI --> API[API HTTP]
+  API --> UC[Casos de Uso]
+  UC --> SD[Servicios de Dominio]
+  SD --> MD[Modelo de Dominio]
 
-actor Usuario as User
+  subgraph "Pipeline Cognitivo (LangGraph)"
+    VC[ValidateContext]
+    CC[ClassifyCharts]
+    AC[AnalyzeChart]
+    GH[GenerateHypotheses]
+    SF[SynthesizeFindings]
+    ES[ExecutiveSummary]
+    RE[Recommendations]
+    GR[GenerateReport]
+  end
 
-package "Frontend (Next.js / React)" {
-  [UI Web]
-}
+  SD --> VC
+  SD --> CC
+  SD --> AC
+  SD --> GH
+  SD --> SF
+  SD --> ES
+  SD --> RE
+  SD --> GR
 
-package "Backend (FastAPI)" {
-  [API HTTP]
-}
+  subgraph "Infraestructura"
+    PG[(PostgreSQL)]
+    RD[(Redis)]
+    FS[(File System)]
+    WK[Worker Celery/RQ]
+    LLM[LLM (LangChain + GPT)]
+  end
 
-package "Aplicación" {
-  [Casos de Uso]
-}
-
-package "Dominio" {
-  [Servicios de Dominio]
-  [Modelo de Dominio]
-}
-
-package "Pipeline Cognitivo (LangGraph)" {
-  [ValidateContext]
-  [ClassifyCharts]
-  [AnalyzeChart]
-  [GenerateHypotheses]
-  [SynthesizeFindings]
-  [ExecutiveSummary]
-  [Recommendations]
-  [GenerateReport]
-}
-
-package "Infraestructura" {
-  database PostgreSQL
-  [Redis]
-  [File System]
-  [Worker Celery/RQ]
-  [LLM (LangChain + GPT)]
-}
-
-User --> [UI Web]
-[UI Web] --> [API HTTP]
-[API HTTP] --> [Casos de Uso]
-[Casos de Uso] --> [Servicios de Dominio]
-[Servicios de Dominio] --> [Modelo de Dominio]
-[Servicios de Dominio] --> [ValidateContext]
-[Servicios de Dominio] --> [ClassifyCharts]
-[Servicios de Dominio] --> [AnalyzeChart]
-[Servicios de Dominio] --> [GenerateHypotheses]
-[Servicios de Dominio] --> [SynthesizeFindings]
-[Servicios de Dominio] --> [ExecutiveSummary]
-[Servicios de Dominio] --> [Recommendations]
-[Servicios de Dominio] --> [GenerateReport]
-
-[Casos de Uso] --> PostgreSQL
-[Casos de Uso] --> [Redis]
-[Casos de Uso] --> [File System]
-[Casos de Uso] --> [Worker Celery/RQ]
-[Servicios de Dominio] --> [LLM (LangChain + GPT)]
-
-@enduml
+  UC --> PG
+  UC --> RD
+  UC --> FS
+  UC --> WK
+  SD --> LLM
 ```
 
 ---
@@ -213,28 +191,18 @@ Representación textual:
 - `GenerateReport`  
   → ensambla `ExecutiveReport` y genera PDF/DOCX.
 
-Diagrama de flujo en PlantUML:
+Diagrama de flujo en Mermaid:
 
-```plantuml
-@startuml AAQ_Cognitive_Pipeline
-start
-
-:ValidateContext;
-if (Contexto válido?) then (sí)
-  :ClassifyCharts;
-  :AnalyzeChart;
-  :GenerateHypotheses;
-  :SynthesizeFindings;
-  :ExecutiveSummary;
-  :Recommendations;
-  :GenerateReport;
-  stop
-else (no)
-  :Marcar pipeline como FAILED_VALIDATION;
-  stop
-endif
-
-@enduml
+```mermaid
+flowchart TD
+  A[ValidateContext] -->|Contexto válido| B[ClassifyCharts]
+  A -->|Contexto inválido| Z[Marcar pipeline como FAILED_VALIDATION]
+  B --> C[AnalyzeChart]
+  C --> D[GenerateHypotheses]
+  D --> E[SynthesizeFindings]
+  E --> F[ExecutiveSummary]
+  F --> G[Recommendations]
+  G --> H[GenerateReport]
 ```
 
 ---
