@@ -122,49 +122,48 @@ Diagrama en texto (visión rápida):
     - Worker Celery/RQ (ejecución asíncrona)
     - LLM (LangChain + GPT)
 
-Diagrama equivalente en Mermaid (renderizable en muchos editores/visores Markdown):
 
 ```mermaid
 flowchart LR
-  User[Usuario] --> UI[UI Web]
-  UI --> API[API HTTP]
-  API --> UC[Casos de Uso]
-  UC --> SD[Servicios de Dominio]
-  SD --> MD[Modelo de Dominio]
+  user[Usuario] --> ui[UI Web]
+  ui --> api[API HTTP]
+  api --> uc[Casos de Uso]
+  uc --> sd[Servicios de Dominio]
+  sd --> md[Modelo de Dominio]
 
-  subgraph "Pipeline Cognitivo (LangGraph)"
-    VC[ValidateContext]
-    CC[ClassifyCharts]
-    AC[AnalyzeChart]
-    GH[GenerateHypotheses]
-    SF[SynthesizeFindings]
-    ES[ExecutiveSummary]
-    RE[Recommendations]
-    GR[GenerateReport]
+  subgraph Pipeline_Cognitivo_LangGraph
+    vc[ValidateContext]
+    cc[ClassifyCharts]
+    ac[AnalyzeChart]
+    gh[GenerateHypotheses]
+    sf[SynthesizeFindings]
+    es[ExecutiveSummary]
+    re[Recommendations]
+    gr[GenerateReport]
   end
 
-  SD --> VC
-  SD --> CC
-  SD --> AC
-  SD --> GH
-  SD --> SF
-  SD --> ES
-  SD --> RE
-  SD --> GR
+  sd --> vc
+  sd --> cc
+  sd --> ac
+  sd --> gh
+  sd --> sf
+  sd --> es
+  sd --> re
+  sd --> gr
 
-  subgraph "Infraestructura"
-    PG[(PostgreSQL)]
-    RD[(Redis)]
-    FS[(File System)]
-    WK[Worker Celery/RQ]
-    LLM[LLM (LangChain + GPT)]
+  subgraph Infraestructura
+    pg[(PostgreSQL)]
+    rd[(Redis)]
+    fs[(File System)]
+    wk[Worker Celery RQ]
+    llm[LLM LangChain GPT]
   end
 
-  UC --> PG
-  UC --> RD
-  UC --> FS
-  UC --> WK
-  SD --> LLM
+  uc --> pg
+  uc --> rd
+  uc --> fs
+  uc --> wk
+  sd --> llm
 ```
 
 ---
@@ -191,7 +190,7 @@ Representación textual:
 - `GenerateReport`  
   → ensambla `ExecutiveReport` y genera PDF/DOCX.
 
-Diagrama de flujo en Mermaid:
+Diagrama de flujo:
 
 ```mermaid
 flowchart TD
