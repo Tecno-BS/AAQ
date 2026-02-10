@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     ENV: str = "development"
     DEBUG: bool = False
     FILES_STORAGE_PATH: Path = Path("./storage")
+    OPENAI_API_KEY: str = ""
 
     model_config = {
         "env_file": ".env",

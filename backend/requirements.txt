@@ -17,3 +17,11 @@ python-multipart>=0.0.6
 
 # Utilities
 uuid6>=2023.5.2
+
+
+#LLM 
+langchain>=0.1.0
+langchain-openai>=0.0.5
+langgraph>=0.0.20
+
+

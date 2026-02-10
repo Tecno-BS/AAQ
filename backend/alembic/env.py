@@ -21,9 +21,8 @@ from app.infraestructure.db.models import (  # noqa: F401
 
 config = context.config
 
-# Usar DATABASE_URL de settings, pero sin +asyncpg para Alembic sync
-sync_url = settings.DATABASE_URL.replace("+asyncpg", "")
-config.set_main_option("sqlalchemy.url", sync_url)
+# Usar DATABASE_URL con asyncpg para migraciones async
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
