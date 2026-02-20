@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.infraestructure.db.session import engine
-from app.interfaces.api.routes import health, studies, charts, analyze, reports
+from app.interfaces.api.routes import health, studies, charts, analyze, reports, study_types
 
 
 @asynccontextmanager
@@ -28,3 +28,4 @@ app.include_router(studies.router)
 app.include_router(charts.router)
 app.include_router(analyze.router)
 app.include_router(reports.router)
+app.include_router(study_types.router)

@@ -2,7 +2,9 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
+
+from app.core.constants import STUDY_TYPES
 
 
 # ==================== REQUEST ====================
@@ -12,13 +14,24 @@ class StudyCreateRequest(BaseModel):
     profile: str
     background: str
     business_question: str
-    study_type: Literal["quantitative", "qualitative", "mixed"]
+    study_type: str
     segments: list[str] = Field(default_factory=list)
     sample: str | None = None
     significance_threshold: float | None = None
     models: list[str] = Field(default_factory=list)
+    strategic_purposes: list[str] = Field(default_factory=list)
     measurements: list[str] = Field(default_factory=list)
     qualitative_study: str | None = None
+
+    @model_validator(mode="after")
+    def validate_study_type(self):
+        if self.study_type not in STUDY_TYPES:
+            raise ValueError(
+                f"study_type debe ser uno de los tipos oficiales. Recibido: '{self.study_type}'"
+            )
+        return self
+
+    
 
 
 # ==================== RESPONSE ====================
@@ -48,6 +61,9 @@ class StudyDetailResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     failure_reason: str | None = None
+    strategic_purpose: list[str] = Field(default_factory=list)
+
+
 
 
 class ChartItem(BaseModel):

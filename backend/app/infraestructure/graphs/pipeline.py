@@ -20,7 +20,7 @@ def build_pipeline_graph():
 
     graph.set_entry_point("validate_context")
 
-    graph.add_coditional_edges(
+    graph.add_conditional_edges(
         "validate_context",
         lambda s: "failed" if s.get("status") == "failed" else "continue",
         {

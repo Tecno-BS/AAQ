@@ -57,6 +57,7 @@ async def get_study_endpoint(
         significance_threshold=study.context.significance_threshold,
         models=study.context.models,
         measurements=study.context.measurements,
+        strategic_purposes=getattr(study.context, "strategic_purposes", []) or [],
         qualitative_study=study.context.qualitative_study,
         charts_count=charts_count,
         created_at=study.created_at,

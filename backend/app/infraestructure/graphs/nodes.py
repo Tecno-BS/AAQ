@@ -13,9 +13,10 @@ from app.infraestructure.graphs.prompts import *
 from app.infraestructure.graphs.state import PipelineState
 
 llm = ChatOpenAI(
-    model = "gpt-4o-mini",
-    api_key = settings.OPENAI_API_KEY,
-    temperature = 0.3,
+    model=getattr(settings, "LLM_MODEL", "openai/gpt-4o-mini"),
+    api_key=settings.OPENAI_API_KEY,
+    base_url=getattr(settings, "LLM_BASE_URL", "https://openrouter.ai/api/v1"),
+    temperature=0.3,
 )
 
 def validate_context_node(state: PipelineState) -> PipelineState:
@@ -65,7 +66,7 @@ def analyze_charts_node(state: PipelineState) -> PipelineState:
     #Analiza cada gráfica y genera el ChartAnalysis
     charts = state["charts"]
     ctx = state["context"]
-    analyses = list[ChartAnalysis] = []
+    analyses : list[ChartAnalysis] = []
 
     for chart in charts:
         chart_info = f"Archivo: {chart.original_filename}, tipo: {chart.chart_type or 'unknown'}"
@@ -79,9 +80,10 @@ def analyze_charts_node(state: PipelineState) -> PipelineState:
 
         response = llm.invoke(prompt)
         text = response.content.strip()
-        if text.startswith("json"):
-            text = text[4:]
-        
+        if "´´´" in text:
+            text = text.split("")[1]
+            if text.strip().lower().startswith("json"):
+                text = text.strip()[4:]        
         try:
             data = json.loads(text)
         except json.JSONDecodeError:
@@ -100,7 +102,6 @@ def analyze_charts_node(state: PipelineState) -> PipelineState:
             business_impact = data.get("business_impact"),
             created_at= __import__("datetime").datetime.utcnow(),
         )
-        analysis.id = chart.id
         analyses.append(analysis)
     
     return {**state, "chart_analyses": analyses, "status":"analyzing"}
@@ -121,9 +122,10 @@ def generate_hypotheses_node(state: PipelineState) -> PipelineState:
 
     response = llm.invoke(prompt)
     text = response.content.strip()
-    if text.startswith("json"):
-        if "json" in text.lower():
-            text = text.split("\n", 1)[-1]
+    if "" in text:
+        text = text.split("")[1]
+        if text.strip().lower().startswith("json"):
+            text = text.strip()[4:]
     try:
         data = json.loads(text)
         hypotheses = data.get("hypotheses", [])
@@ -138,9 +140,11 @@ def synthesize_findings_node(state: PipelineState) -> PipelineState:
     prompt = SYNTHESIZE_FINDINGS.format(hypotheses = "\n".join(hypotheses))
     response = llm.invoke(prompt)
     text = response.content.strip()
-    if text.startwith("json"):
-        if "json" in text.lower():
-            text = text.split("\n", 1)[-1]
+
+    if "" in text:
+        text = text.split("")[1]
+        if text.strip().lower().startswith("json"):
+            text = text.strip()[4:]
     try:
         data = json.loads(text)
         key_findings = data.get("key_findings", [])
@@ -189,7 +193,7 @@ def recommendations_node(state: PipelineState) -> PipelineState:
 
     return {
         **state,
-        "recomendations": recommendations,
+        "recommendations": recommendations,
         "strategies": strategies,
         "status":"completed",
     }

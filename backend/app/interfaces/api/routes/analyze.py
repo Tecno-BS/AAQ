@@ -45,7 +45,7 @@ async def analyze_study_endpoint(
 
 async def run_analysis_pipeline_sync(study_id: UUID):
     #Wrapper para ejecutar el pipeline en background con su propia sesión
-    from app.application.use_cases.run_analysis_pipeline import async_session_factory
+    from app.infraestructure.db.session import async_session_factory
 
     async with async_session_factory() as session:
         try:

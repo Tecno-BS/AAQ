@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     DEBUG: bool = False
     FILES_STORAGE_PATH: Path = Path("./storage")
     OPENAI_API_KEY: str = ""
+    LLM_BASE_URL : str = "https://api.openai.com/api/v1"
+    LLM_MODEL : str = "openai/gpt-4o-mini"
 
     model_config = {
         "env_file": ".env",

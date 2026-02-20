@@ -22,6 +22,7 @@ async def create_study(
         significance_threshold=data.significance_threshold,
         models=data.models,
         measurements=data.measurements,
+        strategic_purposes=getattr(data, "strategic_purposes", []) or [],
         qualitative_study=data.qualitative_study,
     )
     
