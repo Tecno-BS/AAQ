@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.core.constants import STUDY_TYPES
 
@@ -12,6 +12,7 @@ class ResearchContext(BaseModel):
     significance_threshold: float | None = None
     models: list[str] = Field(default_factory=list)
     measurements: list[str] = Field(default_factory=list)
+    strategic_purposes: list[str] = Field(default_factory=list)
     qualitative_study: str | None = None
 
     @model_validator(mode="after")

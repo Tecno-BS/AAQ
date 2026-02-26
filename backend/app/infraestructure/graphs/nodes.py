@@ -37,6 +37,7 @@ def validate_context_node(state: PipelineState) -> PipelineState:
 
     text = response.content.strip().upper()
 
+    """
     if "INVALID" in text:
         return {
             **state,
@@ -45,6 +46,11 @@ def validate_context_node(state: PipelineState) -> PipelineState:
         }
     return {
         **state, "status":"validating"
+    }
+    """
+    return {
+        **state,
+        "status":"validating"
     }
 
 def classify_charts_node(state: PipelineState) -> PipelineState:
@@ -80,10 +86,15 @@ def analyze_charts_node(state: PipelineState) -> PipelineState:
 
         response = llm.invoke(prompt)
         text = response.content.strip()
-        if "´´´" in text:
-            text = text.split("")[1]
+
+        # El modelo puede devolver ```json ... ```; limpiamos el bloque markdown
+        if "```" in text:
+            parts = text.split("```")
+            if len(parts) >= 2:
+                text = parts[1]
             if text.strip().lower().startswith("json"):
-                text = text.strip()[4:]        
+                text = text.strip()[4:].strip()
+
         try:
             data = json.loads(text)
         except json.JSONDecodeError:
@@ -92,7 +103,7 @@ def analyze_charts_node(state: PipelineState) -> PipelineState:
                 "hypotheses": [],
                 "business_impact": "",
             }
-        
+
         analysis = ChartAnalysis(
             id = uuid4(),
             chart_id = chart.id,
@@ -122,10 +133,14 @@ def generate_hypotheses_node(state: PipelineState) -> PipelineState:
 
     response = llm.invoke(prompt)
     text = response.content.strip()
-    if "" in text:
-        text = text.split("")[1]
+
+    if "```" in text:
+        parts = text.split("```")
+        if len(parts) >= 2:
+            text = parts[1]
         if text.strip().lower().startswith("json"):
-            text = text.strip()[4:]
+            text = text.strip()[4:].strip()
+
     try:
         data = json.loads(text)
         hypotheses = data.get("hypotheses", [])
@@ -141,16 +156,19 @@ def synthesize_findings_node(state: PipelineState) -> PipelineState:
     response = llm.invoke(prompt)
     text = response.content.strip()
 
-    if "" in text:
-        text = text.split("")[1]
+    if "```" in text:
+        parts = text.split("```")
+        if len(parts) >= 2:
+            text = parts[1]
         if text.strip().lower().startswith("json"):
-            text = text.strip()[4:]
+            text = text.strip()[4:].strip()
+
     try:
         data = json.loads(text)
         key_findings = data.get("key_findings", [])
     except json.JSONDecodeError:
         key_findings = hypotheses[:5]
-    
+
     return {**state, "key_findings": key_findings}
 
 def executive_summary_node(state: PipelineState) -> PipelineState:
@@ -180,9 +198,14 @@ def recommendations_node(state: PipelineState) -> PipelineState:
     )
     response = llm.invoke(prompt)
     text = response.content.strip()
-    if text.startswith("json"):
-        if "json" in text.lower():
-            text = text.split("\n", 1)[-1]
+
+    if "```" in text:
+        parts = text.split("```")
+        if len(parts) >= 2:
+            text = parts[1]
+        if text.strip().lower().startswith("json"):
+            text = text.strip()[4:].strip()
+
     try:
         data = json.loads(text)
         recommendations = data.get("recommendations", [])

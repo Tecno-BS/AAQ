@@ -1,6 +1,7 @@
+import asyncio
 from uuid import UUID
-
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+import logging 
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.dto.schemas import AnalyzeAcceptedResponse
@@ -10,11 +11,11 @@ from app.interfaces.api.deps import get_session
 
 router = APIRouter(prefix="/studies", tags=["analysis"])
 
+logger = logging.getLogger("aaq.analysis")
 
 @router.post("/{study_id}/analyze", response_model=AnalyzeAcceptedResponse, status_code=202)
 async def analyze_study_endpoint(
     study_id: UUID,
-    background_tasks: BackgroundTasks,
     session: AsyncSession = Depends(get_session),
 ):
     """
@@ -34,7 +35,10 @@ async def analyze_study_endpoint(
             detail="No charts uploaded. Upload at least one chart before analyzing.",
         )
 
-    background_tasks.add_task(run_analysis_pipeline_sync, study_id)
+    # Usar create_task para que el pipeline corra independiente del request HTTP.
+    # BackgroundTasks de FastAPI comparte el ciclo de vida del request y puede
+    # ser cancelado cuando el cliente cierra la conexión (CancelledError).
+    asyncio.get_event_loop().create_task(run_analysis_pipeline_sync(study_id))
     await study_repo.update_status(study_id, "analyzing")
 
     return AnalyzeAcceptedResponse(
@@ -44,13 +48,29 @@ async def analyze_study_endpoint(
     )
 
 async def run_analysis_pipeline_sync(study_id: UUID):
-    #Wrapper para ejecutar el pipeline en background con su propia sesión
     from app.infraestructure.db.session import async_session_factory
 
-    async with async_session_factory() as session:
+    logger.info("[AAQ] Background task iniciado para study %s", study_id)
+    try:
+        async with async_session_factory() as session:
+            try:
+                await run_analysis_pipeline(session, study_id)
+                logger.info("[AAQ] Pipeline OK, ejecutando commit para study %s", study_id)
+                await session.commit()
+                logger.info("[AAQ] COMMIT EXITOSO para study %s", study_id)
+            except Exception as e:
+                logger.exception("[AAQ] Error durante pipeline para study %s", study_id)
+                await session.rollback()
+                raise
+    except Exception as e:
+        logger.exception("[AAQ] Guardando failure_reason para study %s", study_id)
         try:
-            await run_analysis_pipeline(session, study_id)
+            async with async_session_factory() as err_session:
+                from app.infraestructure.repositories import StudyRepositoryImpl
+                repo = StudyRepositoryImpl(err_session)
+                await repo.update_status(study_id, "failed", str(e))
+                await err_session.commit()
         except Exception:
-            from app.infraestructure.repositories import StudyRepositoryImpl
-            repo = StudyRepositoryImpl(session)
-            await repo.update_status(study_id, "failed", "Error al ejecutar el análisis")
+            logger.exception("[AAQ] No se pudo guardar failure_reason para study %s", study_id)
+    finally:
+        logger.info("[AAQ] Background task finalizado para study %s", study_id)

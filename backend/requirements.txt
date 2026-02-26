@@ -24,4 +24,12 @@ langchain>=0.1.0
 langchain-openai>=0.0.5
 langgraph>=0.0.20
 
+# HTTP client para scripts de prueba
+requests>=2.32.0
 
+# Lectura de DOCX y PPTX para tests
+python-docx>=0.8.11
+python-pptx>=0.6.21
+
+# Exportar diapositivas a PNG con PowerPoint (solo Windows; opcional para test_aaq.py)
+pywin32>=306; sys_platform == "win32"

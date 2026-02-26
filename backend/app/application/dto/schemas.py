@@ -61,7 +61,7 @@ class StudyDetailResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     failure_reason: str | None = None
-    strategic_purpose: list[str] = Field(default_factory=list)
+    strategic_purposes: list[str] = Field(default_factory=list)
 
 
 

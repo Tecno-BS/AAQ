@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI
 
 from app.infraestructure.db.session import engine
 from app.interfaces.api.routes import health, studies, charts, analyze, reports, study_types
 
+logging.basicConfig(level=logging.INFO)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

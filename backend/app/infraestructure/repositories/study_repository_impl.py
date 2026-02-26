@@ -20,7 +20,7 @@ def _orm_to_study(study_orm: StudyORM, context_orm: ResearchContextORM) -> Study
         significance_threshold=context_orm.significance_threshold,
         models=context_orm.models or [],
         measurements=context_orm.measurements or [],
-        strategic_purposes = context_orm.strategic_purposes or [],
+        strategic_purposes=context_orm.strategic_purpose or [],
         qualitative_study=context_orm.qualitative_study,
     )
     return Study(
@@ -61,7 +61,7 @@ class StudyRepositoryImpl(IStudyRepository):
             significance_threshold=ctx.significance_threshold,
             models=ctx.models,
             measurements=ctx.measurements,
-            strategic_purposes=ctx.strategic_purposes,
+            strategic_purpose=ctx.strategic_purposes,
             qualitative_study=ctx.qualitative_study,
         )
 
@@ -117,6 +117,7 @@ class StudyRepositoryImpl(IStudyRepository):
             ctx_orm.significance_threshold = ctx.significance_threshold
             ctx_orm.models = ctx.models
             ctx_orm.measurements = ctx.measurements
+            ctx_orm.strategic_purpose = ctx.strategic_purposes
             ctx_orm.qualitative_study = ctx.qualitative_study
 
         await self._session.flush()
